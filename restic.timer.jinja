@@ -1,0 +1,9 @@
+[Unit]
+Description=restic timer
+
+[Timer]
+OnCalendar={{ on_calendar }}
+Unit=restic.service
+
+[Install]
+WantedBy=timers.target

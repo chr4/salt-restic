@@ -1,0 +1,42 @@
+# vim: ft=sls
+
+restic:
+  password: your-super-secret-passphrase
+  repository: ftp://user:pass@your-server.com/mybackup
+
+  # AWS credentials (only required when S3 is used)
+  aws_access_key_id: your-access-key-id
+  aws_secret_access_key: your-secret-access-key
+
+  # Define how long to keep backups. All --keep-* flags are supported,
+  # See: https://restic.readthedocs.io/en/latest/060_forget.html
+  keep:
+    weekly: 1
+    monthly: 6
+
+  # Optional configuration settings (the values used here are the defaults)
+  directories: ['/etc', '/root'] # Include these directories
+  exec_pre: ['pg_dumpall']        # Commands to run before taking the backup (e.g. pg_dump, etc)
+  exec_post: ['cleanup']          # Commands to run after taking the backup (e.g. cleanup commands, etc)
+  verify: true                    # Verify backups
+
+  # Systemd timer settings
+  on_calendar: 02:00
+  nice: 10
+  io_scheduling_class: 2
+  io_scheduling_priority: 7
+
+  # Monit settings (used by the restic.monit state)
+  max_backup_age: 172800          # Alert if backup is older than max_backup_age seconds
+
+  # SSH options
+  ssh:
+    known_hosts: github.com  # Add this server to /etc/ssh/ssh_known_hosts
+
+    # Deploy those keys to /root/.ssh
+    keys:
+      id_ed25519: |
+        -----BEGIN OPENSSH PRIVATE KEY-----
+        ...
+        -----END OPENSSH PRIVATE KEY-----
+      id_ed25519.pub: ssh-ed25519 AAAA...

@@ -1,0 +1,7 @@
+name: restic
+os: Debian, Ubuntu
+os_family: Debian
+version: 202109
+release: 1
+summary: Formula for installing restic
+description: Formula for installing restic

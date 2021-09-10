@@ -1,0 +1,53 @@
+#!/bin/bash
+#
+# vim: ft=sh
+#
+# This script checks whether the last restic backup occurred in a certian timeframe
+
+# timestamp of last snapshot
+
+set -o nounset
+
+get_last_backup_timestamp() {
+  local last_backup_timestamp
+
+  # NOTE: strptime() of jq can't cope with JavaScript date format, therefore using cut
+  last_timestamp=$(jq -r '.[-1].time' | cut -d\. -f1)
+
+  date --date="$last_timestamp" '+%s'
+}
+
+get_timestamp_diff() {
+  local last_backup_unix=${1:-}
+  local now_unix
+  local seconds_since_last_backup
+
+  if [ -z "$last_backup_unix" ]; then
+    echo "Usage: get_timestamp_diff <timestamp>"
+    return 1
+  fi
+
+  now_unix=$(date '+%s')
+  seconds_since_last_backup=$(expr $now_unix - $last_backup_unix)
+
+  echo $seconds_since_last_backup
+}
+
+# Get restic collection status
+collection_status=$(timeout -k 600 300 restic-exec snapshots --json)
+if [ $? -ne 0 ]; then
+  echo "restic collection-status failed:"
+  echo "$collection_status"
+  echo
+  exit 1
+fi
+
+# Return with exit code 1 if last backup is too old
+last_backup_timestamp=$(echo "$collection_status" | get_last_backup_timestamp)
+timestamp_diff=$(get_timestamp_diff $last_backup_timestamp)
+if [ $timestamp_diff -gt {{ max_backup_age }} ]; then
+  echo "Backup too old ($(date -d @${last_backup_timestamp}))"
+  exit 1
+fi
+
+exit 0
