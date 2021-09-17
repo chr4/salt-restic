@@ -15,10 +15,11 @@ restic:
     monthly: 6
 
   # Optional configuration settings (the values used here are the defaults)
-  directories: ['/etc', '/root'] # Include these directories
-  exec_pre: ['pg_dumpall']        # Commands to run before taking the backup (e.g. pg_dump, etc)
-  exec_post: ['cleanup']          # Commands to run after taking the backup (e.g. cleanup commands, etc)
-  verify: true                    # Verify backups
+  directories: ['/etc', '/root']    # Include these directories
+  # TODO: systemd full path without pipes, etc. ExecStartPre, ExecStartPost
+  exec_pre: ['/bin/true'] # Commands to run before taking the backup (e.g. pg_dump, etc)
+  exec_post: ['/bin/ls']   # Commands to run after taking the backup (e.g. cleanup commands, etc)
+  verify: true                      # Verify backups
 
   # Systemd timer settings
   on_calendar: 02:00
