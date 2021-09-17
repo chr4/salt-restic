@@ -24,7 +24,8 @@ control 'restic' do
     its('content') { should match /ftp:\/\/user:pass@your-server.com\/mybackup/ }
     its('content') { should match /--keep-monthly 6/ }
     its('content') { should match /--keep-weekly 1/ }
-    its('content') { should match /pg_dumpall/ }
+    its('content') { should match /\/bin\/true/ }
+    its('content') { should match /\/bin\/ls/ }
     its('content') { should match /'\/root'/ }
     its('content') { should match /'\/etc'/ }
     its('content') { should match /forget/ }
