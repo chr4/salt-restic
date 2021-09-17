@@ -26,35 +26,6 @@ ssh-keyscan {{ pillar['restic']['ssh']['known_hosts'] }} >> /etc/ssh/ssh_known_h
 {% endfor %}
 {% endif %}
 
-# Deploy scripts
-/usr/local/bin/restic-exec:
-  file.managed:
-    - user: root
-    - group: root
-    - mode: 700
-    - source: salt://{{ tpldir }}/restic-exec.jinja
-    - template: jinja
-    - defaults:
-      aws_access_key_id: {{ pillar['restic']['aws_access_key_id']|default() }}
-      aws_secret_access_key: {{ pillar['restic']['aws_secret_access_key']|default() }}
-      password: {{ pillar['restic']['password'] }}
-      repository: {{ pillar['restic']['repository'] }}
-      cache_dir: {{ pillar['restic']['cache_dir']|default('/root/.cache/restic') }}
-
-/usr/local/bin/restic-take-backup:
-  file.managed:
-    - user: root
-    - group: root
-    - mode: 755
-    - source: salt://{{ tpldir }}/restic-take-backup.jinja
-    - template: jinja
-    - defaults:
-      keep: {{ pillar['restic']['keep']|default({}) }}
-      directories: {{ salt['pillar.get']('restic:directories', ['/etc', '/root']) }}
-      exec_pre: {{ pillar['restic']['exec_pre']|default([]) }}
-      exec_post: {{ pillar['restic']['exec_post']|default([]) }}
-      verify: {{ pillar['restic']['verify']|default(true) }}
-
 # Install systemd timer and service
 /lib/systemd/system/restic.service:
   file.managed:
@@ -64,6 +35,16 @@ ssh-keyscan {{ pillar['restic']['ssh']['known_hosts'] }} >> /etc/ssh/ssh_known_h
       nice: {{ pillar['restic']['nice']|default('10') }}
       io_scheduling_class: {{ pillar['restic']['io_scheduling_class']|default('2') }}
       io_scheduling_priority: {{ pillar['restic']['io_scheduling_priority']|default('7') }}
+      aws_access_key_id: {{ pillar['restic']['aws_access_key_id']|default() }}
+      aws_secret_access_key: {{ pillar['restic']['aws_secret_access_key']|default() }}
+      password: {{ pillar['restic']['password'] }}
+      repository: {{ pillar['restic']['repository'] }}
+      cache_dir: {{ pillar['restic']['cache_dir']|default('/root/.cache/restic') }}
+      keep: {{ pillar['restic']['keep']|default({}) }}
+      directories: {{ salt['pillar.get']('restic:directories', ['/etc', '/root']) }}
+      exec_pre: {{ pillar['restic']['exec_pre']|default([]) }}
+      exec_post: {{ pillar['restic']['exec_post']|default([]) }}
+      verify: {{ pillar['restic']['verify']|default(true) }}
     - user: root
     - group: root
     - mode: 644
