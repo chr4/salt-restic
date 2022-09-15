@@ -18,10 +18,11 @@ control 'restic' do
   end
 
   describe file('/lib/systemd/system/restic.service') do
-    its('content') { should match /PASSWORD='your-super-secret-passphrase'/ }
-    its('content') { should match /AWS_ACCESS_KEY_ID='your-access-key-id'/ }
-    its('content') { should match /AWS_SECRET_ACCESS_KEY='your-secret-access-key'/ }
-    its('content') { should match /ftp:\/\/user:pass@your-server.com\/mybackup/ }
+    its('content') { should match /Environment=RESTIC_CACHE_DIR=\/root\/\.cache\/restic/ }
+    its('content') { should match /Environment=RESTIC_PASSWORD=your-super-secret-passphrase/ }
+    its('content') { should match /Environment=RESTIC_REPOSITORY=ftp:\/\/user:pass@your-server\.com\/mybackup/ }
+    its('content') { should match /Environment=AWS_ACCESS_KEY_ID=your-access-key-id/ }
+    its('content') { should match /Environment=AWS_SECRET_ACCESS_KEY=your-secret-access-key/ }
     its('content') { should match /--keep-monthly 6/ }
     its('content') { should match /--keep-weekly 1/ }
     its('content') { should match /\/bin\/true/ }
