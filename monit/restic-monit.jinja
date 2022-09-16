@@ -8,6 +8,29 @@
 
 set -o nounset
 
+export RESTIC_CACHE_DIR={{ cache_dir }}
+export RESTIC_PASSWORD={{ password }}
+export RESTIC_REPOSITORY={{ repository }}
+
+{% if aws_access_key_id != None -%}
+export AWS_ACCESS_KEY_ID={{ aws_access_key_id }}
+export AWS_SECRET_ACCESS_KEY={{ aws_secret_access_key }}
+{%- endif %}
+
+
+# Clean things up when exiting
+function finish {
+  unset RESTIC_CACHE_DIR
+  unset RESTIC_PASSWORD
+  unset RESTIC_REPOSITORY
+
+  {% if aws_access_key_id != None -%}
+  unset AWS_ACCESS_KEY_ID
+  unset AWS_SECRET_ACCESS_KEY
+  {%- endif %}
+}
+trap finish EXIT
+
 get_last_backup_timestamp() {
   local last_backup_timestamp
 
@@ -34,7 +57,7 @@ get_timestamp_diff() {
 }
 
 # Get restic collection status
-collection_status=$(timeout -k 600 300 restic-exec snapshots --json)
+collection_status=$(timeout -k 600 300 restic snapshots --json)
 if [ $? -ne 0 ]; then
   echo "restic collection-status failed:"
   echo "$collection_status"

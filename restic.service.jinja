@@ -6,4 +6,35 @@ Type=oneshot
 Nice={{ nice }}
 IOSchedulingClass={{ io_scheduling_class }}
 IOSchedulingPriority={{ io_scheduling_priority }}
-ExecStart=/usr/local/bin/restic-take-backup
+
+Environment=RESTIC_CACHE_DIR={{ cache_dir }}
+Environment=RESTIC_PASSWORD={{ password }}
+Environment=RESTIC_REPOSITORY={{ repository }}
+
+{% if aws_access_key_id != None -%}
+Environment=AWS_ACCESS_KEY_ID={{ aws_access_key_id }}
+Environment=AWS_SECRET_ACCESS_KEY={{ aws_secret_access_key }}
+{%- endif %}
+
+# Make sure repository is initialized (will fail if so)
+ExecStartPre=/bin/sh -c '/usr/bin/restic init || true'
+
+
+{% for cmd in exec_pre %}
+ExecStartPre={{ cmd }}
+{%- endfor %}
+
+# Remove old backups
+ExecStart=/usr/bin/restic forget --prune {% for time, val in keep|dictsort %}--keep-{{ time }} {{ val }} {% endfor %}
+
+# Backup selected directories
+ExecStart=/usr/bin/restic backup {% for dir in directories %}'{{ dir }}' {% endfor %}
+
+{% if verify %}
+# TODO: Do we want --read-data here?
+ExecStart/usr/bin/restic check
+{%- endif %}
+
+{% for cmd in exec_post %}
+ExecStartPost={{ cmd }}
+{%- endfor %}
